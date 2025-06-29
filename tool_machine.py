@@ -29,7 +29,7 @@ class TWSTool(QApplication):
         super(TWSTool, self).__init__()
         self.serial = TWSToolSerial()
 
-        self.serial.open('com4')
+        self.serial.open('com2')
         self.view = TWSView()
         self.view.out_zigdown.connect(self.serial.in_zigdown.emit)
         self.view.show()
@@ -73,7 +73,7 @@ class TWSToolSerial(QObject):
             line_data = [float(line.split('\t')[1]) for line in lines[step_num + 1:step_start_num[index + 1]]]
             if index == STEP_SEQUENCES.index(STR_LED):
                 print(line_data)
-                for row in range(6):
+                for row in range(4):
                     line_data[row] *= 1000
             if index == STEP_SEQUENCES.index(STR_HALL_SENSOR):
                 line_data[0] *= 1000
@@ -181,8 +181,8 @@ class TWSToolSerial(QObject):
             data_len = len(self.min_data[step_no - 1])
             data_struct = f'>{data_len}B'
         if step_no == RESULT_LED:
-            data_len = 13
-            data_struct = '>6HB'
+            data_len = 9
+            data_struct = '>4HB'
         if step_no == RESULT_HALL_SENSOR:
             data_len = 19
             data_struct = '>H6BhBhBh3B'
@@ -194,6 +194,8 @@ class TWSToolSerial(QObject):
             data_struct = '>2H2BHB2HB2B'
 
         write_data += struct.pack('>HBH', data_len + 3, step_no, data_len)
+        print(self.min_data[step_no - 1])
+        print(data_struct)
         write_data += struct.pack(data_struct, *self.min_data[step_no - 1])
         write_data += struct.pack('B', self.make_checksum(write_data)) + EOT
         print(write_data)
